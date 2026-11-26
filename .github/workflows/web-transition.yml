@@ -1,8 +1,8 @@
 name: Publish the Rally web transition
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 18 28 11 *'
+  push:
+    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -24,18 +24,6 @@ jobs:
         run: |
           mkdir -p _site
           cp -r rally-badminton .nojekyll _site/
-      - name: Include the playable edition during the notice period
-        env:
-          BUILD_URL: ${{ secrets.RALLY_WEB_TRANSITION_BUILD }}
-        run: |
-          if [ "$(date -u +%s)" -ge "$(date -u -d '2026-11-28T18:00:00Z' +%s)" ]; then
-            echo "The bookmark now opens TapTap."
-            exit 0
-          fi
-          curl --fail --silent --show-error --retry 3 --output "$RUNNER_TEMP/browser.zip" "$BUILD_URL"
-          echo "617b9aa1714e423be56393de880d213de207e2de86b51cc1a4ed32d2c191b86a  $RUNNER_TEMP/browser.zip" | sha256sum --check -
-          unzip -oq "$RUNNER_TEMP/browser.zip" -d _site
-          test -f _site/rally-badminton/web-transition.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
